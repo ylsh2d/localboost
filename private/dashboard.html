@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — LocalBoost</title>
+<link rel="stylesheet" href="/styles.css">
+<style>
+  body { display:flex; height:100vh; overflow:hidden; }
+
+  /* ── Sidebar ── */
+  .sb { width:245px; min-width:245px; background:var(--dark); display:flex; flex-direction:column; }
+  .sb-logo { padding:20px; border-bottom:1px solid rgba(255,255,255,.07); display:flex; align-items:center; gap:10px; }
+  .sb-logo-icon { width:32px; height:32px; background:linear-gradient(135deg,var(--accent),var(--accent2)); border-radius:9px; display:flex; align-items:center; justify-content:center; font-size:15px; }
+  .sb-logo-text { font-size:17px; font-weight:800; color:#fff; letter-spacing:-.4px; }
+  .sb-logo-text em { font-style:normal; color:var(--accent); }
+
+  .sb-commerce { margin:12px 14px; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.07); border-radius:10px; padding:10px 12px; display:flex; align-items:center; gap:10px; }
+  .sb-avatar { width:32px; height:32px; background:linear-gradient(135deg,var(--purple),var(--blue)); border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:15px; flex-shrink:0; }
+  .sb-bname { font-size:12px; font-weight:600; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .sb-btype { font-size:10px; color:#94A3B8; }
+
+  .sb-nav { padding:6px 12px; flex:1; overflow-y:auto; }
+  .sb-section { font-size:9px; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:1.2px; padding:14px 10px 6px; }
+  .nav-item { display:flex; align-items:center; gap:10px; padding:9px 11px; border-radius:8px; cursor:pointer; margin-bottom:1px; color:#94A3B8; font-size:13px; font-weight:500; transition:all .15s; }
+  .nav-item:hover { background:rgba(255,255,255,.05); color:#fff; }
+  .nav-item.on { background:rgba(245,158,11,.15); color:var(--accent); }
+  .nav-icon { width:18px; text-align:center; font-size:15px; }
+  .nav-badge { margin-left:auto; background:var(--red); color:#fff; font-size:9px; font-weight:700; padding:2px 6px; border-radius:20px; display:none; }
+
+  .sb-bottom { padding:12px; border-top:1px solid rgba(255,255,255,.07); }
+  .sb-status { background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.07); border-radius:10px; padding:11px 12px; margin-bottom:10px; }
+  .sb-status p { font-size:11px; font-weight:600; color:#fff; margin-bottom:2px; }
+  .sb-status span { font-size:10px; color:#94A3B8; }
+  .sb-portal-btn { margin-top:7px; background:#fff; color:var(--dark); font-size:11px; font-weight:700; padding:5px 10px; border-radius:6px; border:none; cursor:pointer; width:100%; font-family:var(--font); }
+  .sb-user { display:flex; align-items:center; gap:10px; padding:8px; }
+  .sb-user-av { width:28px; height:28px; background:linear-gradient(135deg,var(--green),#34D399); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; color:#fff; font-weight:700; }
+  .sb-user-email { flex:1; font-size:11px; color:#fff; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .sb-logout { background:transparent; border:none; color:#475569; cursor:pointer; font-size:14px; }
+
+  /* ── Main ── */
+  .main { flex:1; display:flex; flex-direction:column; overflow:hidden; }
+  .topbar { background:#fff; border-bottom:1px solid var(--line); padding:0 28px; height:62px; display:flex; align-items:center; gap:16px; flex-shrink:0; }
+  .topbar-title { font-size:16px; font-weight:800; color:var(--ink); flex:1; letter-spacing:-.3px; }
+  .topbar-sub { font-size:12px; color:var(--muted); font-weight:400; }
+  .content { flex:1; overflow-y:auto; padding:26px; }
+
+  /* ── Pages ── */
+  .page { display:none; }
+  .page.on { display:block; }
+
+  /* ── KPIs ── */
+  .kpi-row { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:22px; }
+  .kpi { background:#fff; border:1px solid var(--line); border-radius:var(--r-md); padding:20px; position:relative; overflow:hidden; }
+  .kpi::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; }
+  .kpi.amber::before { background:linear-gradient(90deg,var(--accent),var(--accent2)); }
+  .kpi.green::before { background:var(--green); }
+  .kpi.blue::before  { background:var(--blue); }
+  .kpi-label { font-size:11px; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; margin-bottom:8px; }
+  .kpi-val   { font-size:27px; font-weight:900; color:var(--ink); letter-spacing:-1px; }
+  .kpi-sub   { font-size:12px; color:var(--ink2); margin-top:4px; }
+
+  /* ── Cards ── */
+  .g2 { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px; }
+  .card-head { padding:15px 20px; border-bottom:1px solid #F1F5F9; display:flex; align-items:center; justify-content:space-between; }
+  .card-title { font-size:14px; font-weight:700; color:var(--ink); }
+  .card-sub   { font-size:11px; color:var(--muted); margin-top:1px; }
+  .card-body  { padding:16px 20px; }
+
+  /* ── Avis ── */
+  .av-item { padding:14px 0; border-bottom:1px solid #F1F5F9; }
+  .av-item:last-child { border-bottom:none; }
+  .av-head { display:flex; align-items:center; gap:10px; margin-bottom:8px; }
+  .av-av { width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; color:#fff; flex-shrink:0; background:linear-gradient(135deg,var(--purple),var(--blue)); }
+  .av-name { font-size:13px; font-weight:600; color:var(--ink); }
+  .av-date { font-size:11px; color:var(--muted); }
+  .av-stars { color:#F59E0B; font-size:12px; }
+  .av-text  { font-size:12px; color:var(--ink2); line-height:1.55; margin-bottom:10px; }
+  .av-reply { background:var(--paper); border-left:3px solid var(--accent); padding:10px 12px; border-radius:0 8px 8px 0; margin-bottom:8px; }
+  .av-reply-label { font-size:10px; font-weight:700; color:var(--accent); text-transform:uppercase; margin-bottom:4px; }
+  .av-reply-text  { font-size:12px; color:var(--ink2); line-height:1.55; }
+
+  /* ── Messages ── */
+  .msg-item { padding:14px 0; border-bottom:1px solid #F1F5F9; }
+  .msg-item:last-child { border-bottom:none; }
+  .msg-head { display:flex; align-items:center; gap:10px; margin-bottom:8px; }
+  .msg-av   { width:34px; height:34px; border-radius:50%; background:linear-gradient(135deg,var(--purple),var(--blue)); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; color:#fff; flex-shrink:0; }
+  .msg-name { font-size:13px; font-weight:600; color:var(--ink); }
+  .msg-date { font-size:11px; color:var(--muted); }
+  .msg-text { font-size:12px; color:var(--ink2); line-height:1.55; margin-bottom:10px; }
+  .msg-reply-block { background:var(--paper); border-left:3px solid var(--green); padding:10px 12px; border-radius:0 8px 8px 0; font-size:12px; color:var(--ink2); }
+
+  /* ── RDV ── */
+  .rdv-item { display:flex; align-items:center; gap:12px; padding:11px; background:var(--paper); border-radius:10px; margin-bottom:8px; border:1px solid var(--line); }
+  .rdv-time { text-align:center; min-width:50px; }
+  .rdv-h { font-size:15px; font-weight:800; color:var(--ink); }
+  .rdv-m { font-size:10px; color:var(--muted); }
+  .rdv-bar { width:2px; height:38px; border-radius:2px; flex-shrink:0; }
+  .rdv-info { flex:1; min-width:0; }
+  .rdv-client  { font-size:13px; font-weight:600; color:var(--ink); }
+  .rdv-service { font-size:11px; color:var(--muted); margin-top:2px; }
+  .rdv-acts { display:flex; gap:6px; flex-wrap:wrap; }
+
+  /* ── AI panel ── */
+  .ai-panel { background:var(--dark); border-radius:var(--r-md); padding:22px; color:#fff; margin-bottom:16px; }
+  .ai-label { display:inline-flex; align-items:center; gap:6px; background:rgba(245,158,11,.18); border:1px solid rgba(245,158,11,.3); color:var(--accent); font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.8px; padding:3px 10px; border-radius:20px; margin-bottom:12px; }
+  .ai-title { font-size:15px; font-weight:700; margin-bottom:6px; }
+  .ai-desc  { font-size:12px; color:#94A3B8; line-height:1.6; margin-bottom:16px; }
+  .ai-row   { display:flex; gap:10px; }
+  .ai-input { flex:1; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.1); border-radius:8px; padding:10px 14px; color:#fff; font-size:13px; font-family:var(--font); outline:none; }
+  .ai-input::placeholder { color:#64748B; }
+  .ai-btn { background:var(--accent); color:#fff; border:none; border-radius:8px; padding:10px 18px; font-size:13px; font-weight:700; cursor:pointer; font-family:var(--font); }
+  .ai-result { margin-top:14px; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.08); border-radius:10px; padding:14px; font-size:13px; color:#fff; line-height:1.7; display:none; white-space:pre-wrap; }
+  .ai-result.on { display:block; }
+  .ai-acts { display:flex; gap:8px; margin-top:12px; }
+  .ai-act { padding:6px 14px; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer; border:none; font-family:var(--font); }
+  .ai-act-pub  { background:var(--green); color:#fff; }
+  .ai-act-copy { background:rgba(255,255,255,.1); color:#fff; }
+  .ai-act-regen { background:rgba(245,158,11,.2); color:var(--accent); }
+
+  /* ── Toggle ── */
+  .toggle { width:36px; height:20px; background:var(--line); border-radius:10px; position:relative; cursor:pointer; flex-shrink:0; transition:background .2s; }
+  .toggle.on { background:var(--green); }
+  .toggle::after { content:''; position:absolute; top:2px; left:2px; width:16px; height:16px; background:#fff; border-radius:50%; transition:left .2s; box-shadow:0 1px 3px rgba(0,0,0,.2); }
+  .toggle.on::after { left:18px; }
+
+  /* ── Modal ── */
+  .overlay { position:fixed; inset:0; background:rgba(15,22,40,.55); z-index:100; display:none; align-items:center; justify-content:center; backdrop-filter:blur(4px); }
+  .overlay.on { display:flex; }
+  .modal { background:#fff; border-radius:var(--r-lg); width:520px; max-width:95vw; max-height:85vh; overflow-y:auto; box-shadow:var(--sh-lg); }
+  .modal-head { padding:20px 24px; border-bottom:1px solid var(--line); display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; background:#fff; }
+  .modal-title { font-size:15px; font-weight:700; }
+  .modal-close { width:28px; height:28px; border-radius:50%; border:none; background:var(--paper); cursor:pointer; font-size:16px; }
+  .modal-body { padding:22px 24px; }
+  .modal-foot { padding:14px 24px; border-top:1px solid var(--line); display:flex; gap:10px; justify-content:flex-end; }
+  .form-row2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+
+  /* ── Connect card ── */
+  .connect-card { text-align:center; padding:48px 24px; }
+  .connect-icon { font-size:38px; margin-bottom:14px; }
+  .connect-title { font-size:16px; font-weight:700; margin-bottom:8px; }
+  .connect-desc  { font-size:13px; color:var(--muted); max-width:380px; margin:0 auto 18px; line-height:1.6; }
+
+  /* ── Ratings bar ── */
+  .rbar-wrap { margin-bottom:10px; }
+  .rbar-label { display:flex; justify-content:space-between; font-size:12px; color:var(--ink2); margin-bottom:4px; }
+  .rbar-bg { background:var(--line); border-radius:4px; height:7px; }
+  .rbar-fill { height:7px; border-radius:4px; background:linear-gradient(90deg,var(--accent),var(--accent2)); }
+
+  /* ── Loading dots ── */
+  .dots { display:flex; gap:4px; align-items:center; padding:8px 0; }
+  .dot { width:7px; height:7px; background:var(--accent); border-radius:50%; animation:bop 1.2s infinite; }
+  .dot:nth-child(2){animation-delay:.2s} .dot:nth-child(3){animation-delay:.4s}
+  @keyframes bop{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-8px)}}
+
+  .empty { text-align:center; padding:40px; color:var(--muted); font-size:13px; }
+
+  ::-webkit-scrollbar{width:5px;height:5px} ::-webkit-scrollbar-thumb{background:#CBD5E1;border-radius:3px}
+  @media(max-width:900px){ .kpi-row{grid-template-columns:1fr 1fr} .g2{grid-template-columns:1fr} }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sb">
+  <div class="sb-logo">
+    <div class="sb-logo-icon">⚡</div>
+    <div class="sb-logo-text">Local<em>Boost</em></div>
+  </div>
+  <div class="sb-commerce">
+    <div class="sb-avatar" id="sb-icon">🏪</div>
+    <div>
+      <div class="sb-bname" id="sb-name">Mon commerce</div>
+      <div class="sb-btype" id="sb-type">Commerce</div>
+    </div>
+  </div>
+  <div class="sb-nav">
+    <div class="sb-section">Principal</div>
+    <div class="nav-item on" data-page="home" onclick="go('home')"><span class="nav-icon">📊</span> Tableau de bord</div>
+    <div class="nav-item" data-page="avis" onclick="go('avis')"><span class="nav-icon">⭐</span> Avis Google <span class="nav-badge" id="badge-avis">0</span></div>
+    <div class="nav-item" data-page="social" onclick="go('social')"><span class="nav-icon">📱</span> Réseaux sociaux</div>
+    <div class="nav-item" data-page="messages" onclick="go('messages')"><span class="nav-icon">💬</span> Messages <span class="nav-badge" id="badge-msg">0</span></div>
+    <div class="nav-item" data-page="rdv" onclick="go('rdv')"><span class="nav-icon">📅</span> Rendez-vous <span class="nav-badge" id="badge-rdv">0</span></div>
+    <div class="sb-section">Réglages</div>
+    <div class="nav-item" data-page="params" onclick="go('params')"><span class="nav-icon">⚙️</span> Mon commerce</div>
+  </div>
+  <div class="sb-bottom">
+    <div class="sb-status">
+      <p id="plan-label">✨ Mon abonnement</p>
+      <span id="plan-status">Chargement...</span>
+      <button class="sb-portal-btn" onclick="portal()">Gérer mon abonnement</button>
+    </div>
+    <div class="sb-user">
+      <div class="sb-user-av" id="user-av">?</div>
+      <div class="sb-user-email" id="user-email">...</div>
+      <button class="sb-logout" title="Se déconnecter" onclick="logout()">⏻</button>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title" id="tb-title">Tableau de bord <span class="topbar-sub" id="tb-sub">— Bienvenue 👋</span></div>
+  </div>
+  <div class="content">
+
+    <!-- HOME -->
+    <div class="page on" id="page-home">
+      <div class="kpi-row">
+        <div class="kpi amber"><div class="kpi-label">Note Google</div><div class="kpi-val" id="kpi-rating">—</div><div class="kpi-sub" id="kpi-rating-sub">Connectez Google</div></div>
+        <div class="kpi blue"><div class="kpi-label">Messages non lus</div><div class="kpi-val" id="kpi-msgs">0</div><div class="kpi-sub">Demandes de vos clients</div></div>
+        <div class="kpi green"><div class="kpi-label">RDV à confirmer</div><div class="kpi-val" id="kpi-rdv">0</div><div class="kpi-sub">En attente de votre confirmation</div></div>
+      </div>
+      <div class="g2">
+        <div class="lb-card"><div class="card-head"><div><div class="card-title">💬 Derniers messages</div></div><button class="btn btn-ghost btn-sm" onclick="go('messages')">Tout voir</button></div><div class="card-body" id="home-msgs"><div class="empty">Chargement...</div></div></div>
+        <div class="lb-card"><div class="card-head"><div><div class="card-title">📅 Prochains rendez-vous</div></div><button class="btn btn-ghost btn-sm" onclick="go('rdv')">Tout voir</button></div><div class="card-body" id="home-rdv"><div class="empty">Chargement...</div></div></div>
+      </div>
+      <div class="lb-card"><div class="card-head"><div class="card-title">🔗 Votre fiche publique LocalBoost</div></div><div class="card-body"><p style="font-size:13px;color:var(--muted);margin-bottom:12px">Partagez ce lien à vos clients pour qu'ils vous contactent, prennent RDV ou laissent un avis.</p><div style="background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--ink2);margin-bottom:10px;word-break:break-all" id="pub-link">—</div><button class="btn btn-dark btn-sm" onclick="copyLink()">📋 Copier le lien</button></div></div>
+    </div>
+
+    <!-- AVIS -->
+    <div class="page" id="page-avis">
+      <div class="card-title" style="font-size:18px;font-weight:800;margin-bottom:4px">⭐ Avis Google</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:20px">Vos vrais avis synchronisés depuis votre fiche Google Business Profile</div>
+      <div class="lb-card" id="avis-no-google"><div class="connect-card"><div class="connect-icon">🔗</div><div class="connect-title">Connectez votre fiche Google Business Profile</div><div class="connect-desc">Affichez et répondez à vos vrais avis Google directement depuis ce tableau de bord.</div><button class="btn btn-dark" onclick="connectGoogle()" id="btn-google">🔗 Connecter mon compte Google</button></div></div>
+      <div class="lb-card" id="avis-pick-loc" style="display:none"><div class="card-head"><div class="card-title">Choisissez votre établissement</div></div><div class="card-body"><p style="font-size:13px;color:var(--muted);margin-bottom:14px">Plusieurs fiches sont liées à ce compte. Choisissez la vôtre :</p><div id="locs-list"></div></div></div>
+      <div id="avis-main" style="display:none">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+          <span class="tag tag-green">🔗 Connecté — <span id="loc-name">votre fiche</span></span>
+          <div style="display:flex;gap:8px"><button class="btn btn-ghost btn-sm" onclick="syncAvis()" id="btn-sync">🔄 Synchroniser</button></div>
+        </div>
+        <div class="kpi-row" style="grid-template-columns:repeat(3,1fr)">
+          <div class="kpi amber"><div class="kpi-label">Note moyenne</div><div class="kpi-val" id="a-rating">—</div><div class="kpi-sub" id="a-total">—</div></div>
+          <div class="kpi green"><div class="kpi-label">Répondus</div><div class="kpi-val" id="a-pct">—</div><div class="kpi-sub" id="a-count">—</div></div>
+          <div class="kpi blue"><div class="kpi-label">En attente</div><div class="kpi-val" id="a-pending">—</div><div class="kpi-sub">À traiter</div></div>
+        </div>
+        <div class="g2">
+          <div class="lb-card"><div class="card-head"><div class="card-title">Avis récents</div><select class="lb-select" id="avis-filter" style="width:auto;padding:5px 10px;font-size:12px" onchange="renderAvis()"><option value="all">Tous</option><option value="pending">Non répondus</option><option value="5">5 étoiles</option><option value="neg">Négatifs</option></select></div><div class="card-body" id="avis-list"><div class="empty">Chargement...</div></div></div>
+          <div><div class="lb-card" style="margin-bottom:16px"><div class="card-head"><div class="card-title">Répartition des notes</div></div><div class="card-body" id="rbar-wrap"></div></div>
+          <div class="ai-panel"><div class="ai-label">✨ IA</div><div class="ai-title">Réponses générées par IA</div><div class="ai-desc">Cliquez sur "Répondre avec IA" sur un avis pour générer une réponse personnalisée et la publier directement sur votre fiche Google.</div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SOCIAL -->
+    <div class="page" id="page-social">
+      <div class="card-title" style="font-size:18px;font-weight:800;margin-bottom:4px">📱 Réseaux sociaux</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:20px">Connectez Facebook & Instagram pour publier avec l'IA</div>
+      <div class="lb-card" id="social-no-meta"><div class="connect-card"><div class="connect-icon">📱</div><div class="connect-title">Connectez votre page Facebook</div><div class="connect-desc">Liez votre page Facebook et votre compte Instagram professionnel pour générer et publier des posts directement depuis LocalBoost.</div><button class="btn btn-dark" onclick="connectMeta()" id="btn-meta">📱 Connecter Facebook / Instagram</button></div></div>
+      <div id="social-main" style="display:none">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+          <span class="tag tag-green">📱 Connecté — <span id="meta-name">votre page</span></span>
+          <button class="btn btn-ghost btn-sm" onclick="disconnectMeta()">⛔ Déconnecter</button>
+        </div>
+        <div class="ai-panel">
+          <div class="ai-label">✨ Générateur IA</div>
+          <div class="ai-title">Créez votre prochaine publication en 10 secondes</div>
+          <div class="ai-desc">Décrivez votre idée et l'IA génère un texte adapté à Facebook et Instagram.</div>
+          <div class="ai-row">
+            <input class="ai-input" id="social-prompt" placeholder="Ex: Pizza du jour à la truffe, promo week-end -20%...">
+            <button class="ai-btn" onclick="genPost()">✨ Générer</button>
+          </div>
+          <div class="ai-result" id="social-result">
+            <div id="social-text"></div>
+            <div class="ai-acts">
+              <button class="ai-act ai-act-pub" onclick="toast('🚀 Publication programmée !')">📅 Programmer</button>
+              <button class="ai-act ai-act-copy" onclick="copyPost()">📋 Copier</button>
+              <button class="ai-act ai-act-regen" onclick="genPost()">🔄 Régénérer</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MESSAGES -->
+    <div class="page" id="page-messages">
+      <div class="card-title" style="font-size:18px;font-weight:800;margin-bottom:4px">💬 Messages</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:20px">Les messages envoyés par vos clients depuis votre fiche</div>
+      <div class="lb-card"><div class="card-body" id="msgs-list"><div class="empty">Chargement...</div></div></div>
+    </div>
+
+    <!-- RDV -->
+    <div class="page" id="page-rdv">
+      <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:18px">
+        <div><div class="card-title" style="font-size:18px;font-weight:800">📅 Rendez-vous</div><div style="font-size:13px;color:var(--muted)">Vos demandes clients et vos RDV ajoutés manuellement</div></div>
+        <button class="btn btn-amber" onclick="openModal('rdv')">+ Ajouter</button>
+      </div>
+      <div class="lb-card"><div class="card-body" id="rdv-list"><div class="empty">Chargement...</div></div></div>
+    </div>
+
+    <!-- PARAMS -->
+    <div class="page" id="page-params">
+      <div class="card-title" style="font-size:18px;font-weight:800;margin-bottom:4px">⚙️ Mon commerce</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:20px">Informations visibles par vos clients dans l'annuaire</div>
+      <div class="g2">
+        <div class="lb-card">
+          <div class="card-head"><div class="card-title">Informations</div></div>
+          <div class="card-body">
+            <div class="lb-field"><label class="lb-label">Nom du commerce</label><input class="lb-input" id="p-name"></div>
+            <div class="form-row2">
+              <div class="lb-field"><label class="lb-label">Type</label>
+                <select class="lb-select" id="p-type">
+                  <option value="restaurant">🍽️ Restaurant</option><option value="coiffeur">💇 Coiffeur</option><option value="beaute">💅 Institut de beauté</option><option value="boulangerie">🥖 Boulangerie</option><option value="sport">🏋️ Sport / Fitness</option><option value="sante">🩺 Santé / Bien-être</option><option value="commerce">🛍️ Commerce</option><option value="autre">📍 Autre</option>
+                </select>
+              </div>
+              <div class="lb-field"><label class="lb-label">Ville</label><input class="lb-input" id="p-city"></div>
+            </div>
+            <div class="lb-field"><label class="lb-label">Adresse</label><input class="lb-input" id="p-address"></div>
+            <div class="lb-field"><label class="lb-label">Téléphone</label><input class="lb-input" id="p-phone"></div>
+            <div class="lb-field"><label class="lb-label">Description</label><textarea class="lb-textarea" id="p-desc"></textarea></div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px"><span style="font-size:13px;color:var(--ink2)">Visible dans l'annuaire</span><div class="toggle" id="t-visible" onclick="this.classList.toggle('on')"></div></div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px"><span style="font-size:13px;color:var(--ink2)">🚴 Livraison / À emporter</span><div class="toggle" id="t-delivery" onclick="this.classList.toggle('on')"></div></div>
+            <button class="btn btn-amber" onclick="saveParams()" id="btn-save">Enregistrer</button>
+            <div id="save-msg" style="margin-top:8px;font-size:13px"></div>
+          </div>
+        </div>
+        <div>
+          <div class="lb-card" style="margin-bottom:16px">
+            <div class="card-head"><div class="card-title">Connexions</div></div>
+            <div class="card-body">
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #F1F5F9"><span style="font-size:13px">🔗 Google Business Profile</span><span class="tag" id="p-google-status">—</span></div>
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0"><span style="font-size:13px">📱 Facebook / Instagram</span><span class="tag" id="p-meta-status">—</span></div>
+            </div>
+          </div>
+          <div class="lb-card">
+            <div class="card-head"><div class="card-title">Lien public</div></div>
+            <div class="card-body">
+              <div style="background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--ink2);word-break:break-all;margin-bottom:10px" id="p-pub-link">—</div>
+              <button class="btn btn-ghost btn-sm" onclick="copyLink()">📋 Copier</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL NOUVEAU RDV -->
+<div class="overlay" id="overlay" onclick="overlayClick(event)">
+  <div class="modal" id="modal-rdv" style="display:none">
+    <div class="modal-head"><div class="modal-title">📅 Nouveau rendez-vous</div><button class="modal-close" onclick="closeModal()">✕</button></div>
+    <div class="modal-body">
+      <div class="lb-field"><label class="lb-label">Nom du client *</label><input class="lb-input" id="m-name" placeholder="Marie Dupont"></div>
+      <div class="form-row2">
+        <div class="lb-field"><label class="lb-label">Téléphone</label><input class="lb-input" id="m-phone"></div>
+        <div class="lb-field"><label class="lb-label">Email</label><input class="lb-input" id="m-email"></div>
+      </div>
+      <div class="form-row2">
+        <div class="lb-field"><label class="lb-label">Date *</label><input type="date" class="lb-input" id="m-date"></div>
+        <div class="lb-field"><label class="lb-label">Heure *</label><input type="time" class="lb-input" id="m-time"></div>
+      </div>
+      <div class="lb-field"><label class="lb-label">Type</label><select class="lb-select" id="m-rtype"><option value="rdv">📅 Rendez-vous</option><option value="takeaway">📦 À emporter</option><option value="delivery">🚴 Livraison</option></select></div>
+      <div class="lb-field"><label class="lb-label">Service / Prestation</label><input class="lb-input" id="m-service" placeholder="Coupe + brushing..."></div>
+      <div class="lb-field"><label class="lb-label">Note interne</label><textarea class="lb-textarea" id="m-notes" style="min-height:60px"></textarea></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal()">Annuler</button>
+      <button class="btn btn-amber" onclick="createRdv()" id="btn-create-rdv">Créer</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="/dashboard.js"></script>
+</body>
+</html>
