@@ -1,0 +1,94 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+:root {
+  --dark:    #0F1628;
+  --dark2:   #1A2440;
+  --accent:  #F59E0B;
+  --accent2: #FB923C;
+  --green:   #10B981;
+  --red:     #EF4444;
+  --blue:    #3B82F6;
+  --purple:  #8B5CF6;
+  --white:   #FFFFFF;
+  --paper:   #F8F9FC;
+  --line:    #E2E8F0;
+  --ink:     #0F172A;
+  --ink2:    #334155;
+  --muted:   #64748B;
+  --font:    'Inter', sans-serif;
+  --r-sm:    8px;
+  --r-md:    12px;
+  --r-lg:    16px;
+  --sh:      0 2px 12px rgba(15,23,42,.07);
+  --sh-lg:   0 20px 50px rgba(15,23,42,.22);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font); background: var(--paper); color: var(--ink); -webkit-font-smoothing: antialiased; }
+a { color: inherit; text-decoration: none; }
+button, input, select, textarea { font-family: var(--font); }
+
+/* ── Topbar ── */
+.lb-bar {
+  background: var(--dark);
+  padding: 0 32px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.lb-logo { display:flex; align-items:center; gap:10px; }
+.lb-logo-icon { width:34px; height:34px; background:linear-gradient(135deg,var(--accent),var(--accent2)); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:17px; }
+.lb-logo-text { font-size:18px; font-weight:800; color:var(--white); letter-spacing:-.4px; }
+.lb-logo-text em { font-style:normal; color:var(--accent); }
+.lb-nav { display:flex; align-items:center; gap:20px; }
+.lb-nav a { color:#CBD5E1; font-size:14px; font-weight:500; }
+.lb-nav a:hover { color:var(--white); }
+
+/* ── Boutons ── */
+.btn { display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:11px 20px; border-radius:var(--r-sm); font-size:14px; font-weight:700; border:none; cursor:pointer; transition:all .15s; white-space:nowrap; }
+.btn-amber  { background:var(--accent); color:#fff; }
+.btn-amber:hover { background:#D97706; }
+.btn-dark   { background:var(--dark); color:#fff; }
+.btn-dark:hover { background:#000; }
+.btn-ghost  { background:transparent; color:var(--ink); border:1.5px solid var(--line); }
+.btn-ghost:hover { border-color:var(--muted); }
+.btn-google { background:#fff; color:var(--ink); border:1.5px solid var(--line); }
+.btn-google:hover { border-color:var(--muted); box-shadow:var(--sh); }
+.btn-sm  { padding:7px 14px; font-size:13px; }
+.btn-lg  { padding:14px 28px; font-size:15px; }
+.btn-block { width:100%; }
+.btn:disabled { opacity:.5; cursor:not-allowed; }
+
+/* ── Cartes / blocs ── */
+.lb-card { background:var(--white); border:1px solid var(--line); border-radius:var(--r-md); }
+
+/* ── Tags ── */
+.tag { display:inline-flex; align-items:center; gap:4px; padding:3px 9px; border-radius:20px; font-size:11px; font-weight:700; }
+.tag-green  { background:#D1FAE5; color:#065F46; }
+.tag-amber  { background:#FEF3C7; color:#92400E; }
+.tag-red    { background:#FEE2E2; color:#991B1B; }
+.tag-blue   { background:#DBEAFE; color:#1E40AF; }
+.tag-muted  { background:var(--paper); color:var(--muted); border:1px solid var(--line); }
+
+/* ── Formulaires ── */
+.lb-field { margin-bottom:16px; }
+.lb-label { display:block; font-size:12px; font-weight:600; color:var(--ink2); margin-bottom:6px; }
+.lb-input, .lb-select, .lb-textarea { width:100%; padding:11px 14px; border:1.5px solid var(--line); border-radius:var(--r-sm); font-size:14px; outline:none; background:#fff; color:var(--ink); transition:border-color .15s; }
+.lb-input:focus, .lb-select:focus, .lb-textarea:focus { border-color:var(--accent); }
+.lb-textarea { min-height:90px; resize:vertical; }
+
+/* ── Toast ── */
+.toast { position:fixed; bottom:24px; right:24px; background:var(--dark); color:#fff; padding:12px 18px; border-radius:var(--r-sm); font-size:13px; font-weight:500; z-index:999; transform:translateY(100px); opacity:0; transition:all .3s; border-left:3px solid var(--green); box-shadow:var(--sh-lg); max-width:360px; }
+.toast.show { transform:translateY(0); opacity:1; }
+.toast.err  { border-left-color:var(--red); }
+
+/* ── Empty state ── */
+.empty { text-align:center; padding:48px 20px; color:var(--muted); font-size:13px; }
+.empty-icon { font-size:32px; margin-bottom:10px; display:block; }
+
+/* ── Footer ── */
+.lb-footer { text-align:center; padding:32px 24px; color:var(--muted); font-size:13px; border-top:1px solid var(--line); }
+.lb-footer a { color:var(--muted); text-decoration:underline; }
+
+@media (max-width:720px) { .lb-bar { padding:0 18px; } .lb-nav .hide-mob { display:none; } }
