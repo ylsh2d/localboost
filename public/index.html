@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LocalBoost — Le commerce local, en mieux</title>
+<link rel="stylesheet" href="/styles.css">
+<style>
+  body { overflow-x:hidden; }
+
+  .split { display:flex; min-height:calc(100vh - 64px); }
+
+  .half {
+    flex:1; display:flex; flex-direction:column;
+    align-items:center; justify-content:center;
+    text-align:center; padding:60px 40px;
+    cursor:pointer; text-decoration:none;
+    transition:flex .4s cubic-bezier(.22,1,.36,1);
+    overflow:hidden; position:relative;
+  }
+  .half.client  { background:var(--paper); color:var(--ink); }
+  .half.merchant {
+    background:radial-gradient(circle at 30% 20%, var(--dark2) 0%, var(--dark) 65%);
+    color:#fff;
+  }
+  .half.merchant::before {
+    content:''; position:absolute;
+    width:500px; height:500px;
+    background:radial-gradient(circle, rgba(245,158,11,.13) 0%, transparent 70%);
+    top:-120px; right:-150px; pointer-events:none;
+  }
+  .split:has(.client:hover) .client   { flex:1.1; }
+  .split:has(.merchant:hover) .merchant { flex:1.1; }
+
+  .half-icon { width:56px; height:56px; border-radius:16px; display:flex; align-items:center; justify-content:center; font-size:26px; margin-bottom:22px; position:relative; z-index:1; }
+  .client .half-icon  { background:#DBEAFE; }
+  .merchant .half-icon { background:linear-gradient(135deg,var(--accent),var(--accent2)); }
+
+  .eyebrow { font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; margin-bottom:12px; opacity:.6; position:relative; z-index:1; }
+
+  .half h1 { font-size:34px; font-weight:800; letter-spacing:-1px; line-height:1.2; margin-bottom:14px; max-width:400px; position:relative; z-index:1; }
+  .half p  { font-size:15px; line-height:1.65; max-width:340px; margin-bottom:26px; position:relative; z-index:1; }
+  .client p   { color:var(--muted); }
+  .merchant p { color:#B9BFCC; }
+
+  .cta { display:inline-flex; align-items:center; gap:8px; font-size:14px; font-weight:700; padding:13px 26px; border-radius:10px; transition:gap .2s; position:relative; z-index:1; }
+  .client .cta   { background:var(--dark); color:#fff; }
+  .merchant .cta { background:var(--accent); color:#fff; }
+  .half:hover .cta { gap:12px; }
+
+  .divider { width:1px; background:var(--line); }
+
+  @media(max-width:760px){
+    .split { flex-direction:column; }
+    .divider { display:none; }
+    .half { padding:48px 28px; min-height:360px; }
+    .half h1 { font-size:26px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="lb-bar">
+  <div class="lb-logo">
+    <div class="lb-logo-icon">⚡</div>
+    <div class="lb-logo-text">Local<em>Boost</em></div>
+  </div>
+  <nav class="lb-nav">
+    <a href="/connexion-commercant.html" class="hide-mob">Espace commerçant</a>
+  </nav>
+</header>
+
+<div class="split">
+  <a href="/annuaire.html" class="half client">
+    <div class="half-icon">🔍</div>
+    <div class="eyebrow">Je cherche un service</div>
+    <h1>Trouvez le bon commerce en quelques secondes</h1>
+    <p>Coiffeur, restaurant, boulangerie... Recherchez, comparez, contactez et prenez rendez-vous directement.</p>
+    <span class="cta">Rechercher un commerce →</span>
+  </a>
+
+  <div class="divider"></div>
+
+  <a href="/connexion-commercant.html" class="half merchant">
+    <div class="half-icon">🏪</div>
+    <div class="eyebrow">Je gère un commerce</div>
+    <h1>Vos avis, messages et rendez-vous. Un seul écran.</h1>
+    <p>Connectez votre fiche Google et centralisez tout — avec l'IA qui automatise vos publications réseaux sociaux.</p>
+    <span class="cta">Découvrir LocalBoost Pro →</span>
+  </a>
+</div>
+
+<footer class="lb-footer">© 2026 LocalBoost · <a href="#">Mentions légales</a> · <a href="#">CGV</a></footer>
+
+</body>
+</html>
