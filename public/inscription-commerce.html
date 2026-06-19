@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mon commerce — LocalBoost</title>
+<link rel="stylesheet" href="/styles.css">
+<style>
+  body { min-height:100vh; display:flex; flex-direction:column; }
+  .wrap { flex:1; display:flex; align-items:center; justify-content:center; padding:40px 20px; }
+  .card { background:#fff; border:1px solid var(--line); border-radius:var(--r-lg); padding:40px; width:100%; max-width:480px; box-shadow:var(--sh); }
+  .card h1 { font-size:22px; font-weight:800; letter-spacing:-.5px; margin-bottom:8px; }
+  .card .sub { font-size:13px; color:var(--muted); margin-bottom:28px; line-height:1.6; }
+  .row2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+</style>
+</head>
+<body>
+
+<header class="lb-bar">
+  <div class="lb-logo"><div class="lb-logo-icon">⚡</div><div class="lb-logo-text">Local<em>Boost</em></div></div>
+</header>
+
+<div class="wrap">
+  <div class="card">
+    <h1>Parlez-nous de votre commerce</h1>
+    <p class="sub">Ces informations permettent à vos clients de vous trouver dans l'annuaire et nous aident à retrouver votre fiche Google.</p>
+
+    <form id="form">
+      <div class="lb-field">
+        <label class="lb-label">Nom du commerce *</label>
+        <input class="lb-input" id="name" required placeholder="Ex : Pizzeria Napoli">
+      </div>
+      <div class="row2">
+        <div class="lb-field">
+          <label class="lb-label">Type de commerce *</label>
+          <select class="lb-select" id="type">
+            <option value="restaurant">🍽️ Restaurant</option>
+            <option value="coiffeur">💇 Coiffeur</option>
+            <option value="beaute">💅 Institut de beauté</option>
+            <option value="boulangerie">🥖 Boulangerie</option>
+            <option value="sport">🏋️ Sport / Fitness</option>
+            <option value="sante">🩺 Santé / Bien-être</option>
+            <option value="commerce">🛍️ Commerce</option>
+            <option value="autre">📍 Autre</option>
+          </select>
+        </div>
+        <div class="lb-field">
+          <label class="lb-label">Ville *</label>
+          <input class="lb-input" id="city" required placeholder="Ex : Lyon">
+        </div>
+      </div>
+      <div class="lb-field">
+        <label class="lb-label">Adresse complète (optionnel)</label>
+        <input class="lb-input" id="address" placeholder="12 rue de la Paix">
+      </div>
+      <div class="lb-field">
+        <label class="lb-label">Téléphone (optionnel)</label>
+        <input class="lb-input" id="phone" placeholder="06 12 34 56 78">
+      </div>
+      <div class="lb-field">
+        <label class="lb-label">Description courte (optionnel)</label>
+        <textarea class="lb-textarea" id="desc" style="min-height:70px" placeholder="Quelques mots sur votre commerce..."></textarea>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
+        <input type="checkbox" id="delivery" style="width:16px;height:16px;cursor:pointer">
+        <label for="delivery" style="font-size:13px;color:var(--ink2);cursor:pointer">🚴 Mon commerce propose la livraison ou la commande à emporter</label>
+      </div>
+      <button type="submit" class="btn btn-amber btn-block btn-lg" id="btn">Continuer vers les abonnements →</button>
+    </form>
+  </div>
+</div>
+
+<script>
+document.getElementById('form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const btn = document.getElementById('btn');
+  btn.disabled = true; btn.textContent = 'Enregistrement...';
+  try {
+    const res = await fetch('/api/merchant/complete-profile', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        businessName: document.getElementById('name').value,
+        businessType: document.getElementById('type').value,
+        city: document.getElementById('city').value,
+        address: document.getElementById('address').value,
+        phone: document.getElementById('phone').value,
+        description: document.getElementById('desc').value,
+        offersDelivery: document.getElementById('delivery').checked,
+      }),
+    });
+    const data = await res.json();
+    if (!res.ok) { alert(data.error || 'Une erreur est survenue'); btn.disabled = false; btn.textContent = 'Continuer vers les abonnements →'; return; }
+    window.location.href = '/abonnement.html';
+  } catch(e) {
+    alert('Erreur de connexion au serveur');
+    btn.disabled = false; btn.textContent = 'Continuer vers les abonnements →';
+  }
+});
+</script>
+</body>
+</html>
