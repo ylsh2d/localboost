@@ -239,40 +239,63 @@ app.get('/api/auth/merchant/start', (req, res) => {
 
 app.get('/api/auth/merchant/callback', async (req, res) => {
   const { code, state, error } = req.query;
-  if (error || !code || state !== req.cookies.lb_oauth_state) return res.redirect('/connexion-commercant.html?auth=error');
+  console.log('[MERCHANT CALLBACK] reçu — error:', error, '| code présent:', !!code, '| state match:', state === req.cookies.lb_oauth_state);
+
+  if (error || !code || state !== req.cookies.lb_oauth_state) {
+    console.log('[MERCHANT CALLBACK] échec validation state/code — redirection erreur');
+    return res.redirect('/connexion-commercant.html?auth=error');
+  }
+
   try {
+    console.log('[MERCHANT CALLBACK] échange du code Google...');
     const tokens = await exchangeCode(code, `${SITE}/api/auth/merchant/callback`);
-    if (!tokens.access_token) return res.redirect('/connexion-commercant.html?auth=error');
+    console.log('[MERCHANT CALLBACK] tokens reçus — access_token présent:', !!tokens.access_token, '| erreur Google:', tokens.error || 'aucune');
+
+    if (!tokens.access_token) {
+      console.log('[MERCHANT CALLBACK] pas de access_token — redirection erreur');
+      return res.redirect('/connexion-commercant.html?auth=error');
+    }
+
     const profile = await getGoogleProfile(tokens.access_token);
+    console.log('[MERCHANT CALLBACK] profil Google — email:', profile.email, '| sub:', profile.sub);
+
     const expiry = new Date(Date.now() + (tokens.expires_in || 3600) * 1000).toISOString();
-    const { data: existing } = await supabaseAdmin.from('merchants').select('*').eq('google_sub', profile.sub).maybeSingle();
+    const { data: existing, error: sbError } = await supabaseAdmin.from('merchants').select('*').eq('google_sub', profile.sub).maybeSingle();
+    console.log('[MERCHANT CALLBACK] recherche Supabase — trouvé:', !!existing, '| erreur Supabase:', sbError?.message || 'aucune');
+
     let merchantId, isNew = false;
     if (existing) {
       merchantId = existing.id;
-      await supabaseAdmin.from('merchants').update({
+      const { error: updateErr } = await supabaseAdmin.from('merchants').update({
         email: profile.email,
         google_access_token: tokens.access_token,
         google_refresh_token: tokens.refresh_token || existing.google_refresh_token,
         google_token_expiry: expiry,
         google_connected: true,
       }).eq('id', merchantId);
+      console.log('[MERCHANT CALLBACK] update merchant — erreur:', updateErr?.message || 'aucune');
     } else {
       isNew = true;
       merchantId = crypto.randomUUID();
-      await supabaseAdmin.from('merchants').insert({
+      const { error: insertErr } = await supabaseAdmin.from('merchants').insert({
         id: merchantId, email: profile.email, google_sub: profile.sub,
         google_access_token: tokens.access_token, google_refresh_token: tokens.refresh_token,
         google_token_expiry: expiry, google_connected: true, subscription_status: 'none',
       });
+      console.log('[MERCHANT CALLBACK] insert nouveau merchant — id:', merchantId, '| erreur:', insertErr?.message || 'aucune');
     }
+
     setCookie(res, 'lb_merchant', { id: merchantId });
     res.clearCookie('lb_oauth_state');
+
     const { data: m } = await supabaseAdmin.from('merchants').select('business_name,subscription_status').eq('id', merchantId).single();
+    console.log('[MERCHANT CALLBACK] lecture merchant — business_name:', m?.business_name, '| status:', m?.subscription_status, '| isNew:', isNew);
+
     if (isNew || !m?.business_name) return res.redirect('/inscription-commerce.html');
     if (m?.subscription_status !== 'active') return res.redirect('/abonnement.html');
     res.redirect('/dashboard');
   } catch (e) {
-    console.error('Merchant Google callback error:', e);
+    console.error('[MERCHANT CALLBACK] ERREUR CRITIQUE:', e.message, e.stack);
     res.redirect('/connexion-commercant.html?auth=error');
   }
 });
@@ -332,7 +355,7 @@ app.post('/api/checkout', authMerchant, async (req, res) => {
       mode: 'subscription',
       customer_email: m?.email,
       line_items: [{ price: priceId, quantity: 1 }],
-      success_url: `${SITE}/dashboard?paiement=ok`,
+      success_url: `${SITE}/paiement-confirme.html`,
       cancel_url: `${SITE}/abonnement.html`,
       metadata: { merchant_id: req.merchantId },
       allow_promotion_codes: true,
