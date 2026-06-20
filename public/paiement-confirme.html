@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Paiement confirmé — LocalBoost</title>
+<link rel="stylesheet" href="/styles.css">
+<style>
+  body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(circle at 50% 0%, var(--dark2), var(--dark) 60%);
+  }
+
+  .card {
+    background: #fff;
+    border-radius: var(--r-lg);
+    padding: 48px 44px;
+    max-width: 420px;
+    width: 100%;
+    text-align: center;
+    box-shadow: var(--sh-lg);
+  }
+
+  .success-icon {
+    width: 64px; height: 64px;
+    background: linear-gradient(135deg, var(--green), #34D399);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px;
+    margin: 0 auto 22px;
+    animation: pop 0.4s cubic-bezier(0.22,1,0.36,1);
+  }
+
+  @keyframes pop {
+    from { transform: scale(0); opacity: 0; }
+    to   { transform: scale(1); opacity: 1; }
+  }
+
+  h1 { font-size: 22px; font-weight: 800; letter-spacing: -.5px; margin-bottom: 10px; }
+  p  { font-size: 14px; color: var(--muted); line-height: 1.6; margin-bottom: 28px; }
+
+  .progress-bar {
+    background: var(--line);
+    border-radius: 10px;
+    height: 6px;
+    overflow: hidden;
+    margin-bottom: 14px;
+  }
+  .progress-fill {
+    height: 6px;
+    border-radius: 10px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    width: 0%;
+    transition: width 0.1s linear;
+  }
+
+  .status-text {
+    font-size: 13px;
+    color: var(--muted);
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="success-icon">✓</div>
+  <h1>Paiement confirmé !</h1>
+  <p>Votre abonnement est en cours d'activation. Vous allez être redirigé vers votre tableau de bord dans quelques secondes.</p>
+  <div class="progress-bar"><div class="progress-fill" id="bar"></div></div>
+  <div class="status-text" id="status">Activation en cours...</div>
+</div>
+
+<script>
+// On attend que le webhook Stripe ait mis à jour Supabase
+// avant de rediriger vers le dashboard.
+// On vérifie toutes les secondes si le statut est devenu "active".
+
+let elapsed = 0;
+const MAX_WAIT = 12000; // 12 secondes max
+const CHECK_INTERVAL = 1500; // vérifie toutes les 1.5 secondes
+
+const bar = document.getElementById('bar');
+const statusEl = document.getElementById('status');
+
+// Barre de progression visuelle
+const progressInterval = setInterval(() => {
+  elapsed += 100;
+  const pct = Math.min((elapsed / MAX_WAIT) * 100, 95);
+  bar.style.width = pct + '%';
+}, 100);
+
+// Vérification du statut
+async function checkStatus() {
+  try {
+    const res = await fetch('/api/merchant/me');
+    if (!res.ok) {
+      // Non connecté → retour connexion
+      clearInterval(progressInterval);
+      window.location.href = '/connexion-commercant.html';
+      return;
+    }
+    const data = await res.json();
+    const status = data.merchant?.subscription_status;
+
+    if (status === 'active') {
+      // Le webhook est arrivé → on peut accéder au dashboard
+      clearInterval(progressInterval);
+      bar.style.width = '100%';
+      statusEl.textContent = '✅ Accès activé ! Redirection...';
+      setTimeout(() => {
+        window.location.href = '/dashboard?paiement=ok';
+      }, 600);
+    } else if (elapsed >= MAX_WAIT) {
+      // Timeout : le webhook est très lent, on redirige quand même
+      // et le dashboard re-vérifiera
+      clearInterval(progressInterval);
+      statusEl.textContent = 'Redirection...';
+      window.location.href = '/dashboard?paiement=ok';
+    }
+    // Sinon on attend et on revérifie
+  } catch (e) {
+    // Erreur réseau, on essaye encore
+  }
+}
+
+// Première vérification après 2 secondes, puis toutes les 1.5s
+setTimeout(() => {
+  checkStatus();
+  setInterval(checkStatus, CHECK_INTERVAL);
+}, 2000);
+</script>
+
+</body>
+</html>
